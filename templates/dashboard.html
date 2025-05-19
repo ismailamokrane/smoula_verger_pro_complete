@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Smoula Verger Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h2 class="text-success text-center mb-4">🌿 Tableau de Bord</h2>
+
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <a href="/surveillance" class="text-decoration-none">
+          <div class="card shadow-sm p-4">
+            <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+            <h5>Surveillance</h5>
+            <p>Ajouter des observations avec photos</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="/rapports" class="text-decoration-none">
+          <div class="card shadow-sm p-4">
+            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+            <h5>Les Rapports</h5>
+            <p>Exporter les rapports hebdomadaires</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="/base" class="text-decoration-none">
+          <div class="card shadow-sm p-4">
+            <i class="fas fa-database fa-3x text-success mb-3"></i>
+            <h5>Base de Données</h5>
+            <p>Consulter toutes les données</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-5 text-center">
+      <a href="/logout" class="btn btn-outline-secondary">🔒 Déconnexion</a>
+    </div>
+  </div>
+</body>
+</html>
