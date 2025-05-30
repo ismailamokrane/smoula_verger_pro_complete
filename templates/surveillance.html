@@ -38,12 +38,20 @@
       document.getElementById("success-message").style.display = "block";
       setTimeout(() => document.getElementById("success-message").style.display = "none", 3000);
     }
+
+    function filterCards() {
+      const filter = document.getElementById("searchInput").value.toLowerCase();
+      const cards = document.querySelectorAll(".observation-card");
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(filter) ? "block" : "none";
+      });
+    }
   </script>
 </head>
 <body class="bg-light">
 <div class="container py-5">
   <h2 class="text-success mb-4">📸 Surveillance - Nouvelle Observation</h2>
-
   <div id="success-message" class="alert alert-success success-message">✅ Observation ajoutée avec succès !</div>
 
   <form method="post" enctype="multipart/form-data" action="/add_observation" onsubmit="showSuccess()">
@@ -55,12 +63,10 @@
         <option value="P3">P3</option>
       </select>
     </div>
-
     <div class="mb-3">
       <label for="date" class="form-label">📅 Date</label>
       <input type="date" name="date" class="form-control" required>
     </div>
-
     <div class="mb-3">
       <label for="type_probleme" class="form-label">⚠️ Type de problème</label>
       <select name="type_probleme" id="type_probleme" class="form-select" onchange="toggleProduits()" required>
@@ -72,51 +78,49 @@
         <option value="autres">❗ Autres</option>
       </select>
     </div>
-
     <div class="mb-3" id="produit_section" style="display:none;">
       <label for="produit" class="form-label">💡 Produit recommandé</label>
       <select name="produit" id="produit" class="form-select"></select>
     </div>
-
     <div class="mb-3">
       <label for="description" class="form-label">📝 Description</label>
       <textarea name="description" class="form-control" rows="3" required></textarea>
     </div>
-
     <div class="mb-3">
       <label for="recommandation" class="form-label">🧠 Recommandation</label>
       <textarea name="recommandation" class="form-control" rows="2"></textarea>
     </div>
-
     <div class="mb-3">
       <label for="photo" class="form-label">📷 Photo (ou caméra)</label>
       <input type="file" name="photo" accept="image/*" capture="environment" class="form-control">
     </div>
-
     <button type="submit" class="btn btn-success">✅ Ajouter l'observation</button>
   </form>
 
   <hr class="my-5">
 
   <h4 class="text-secondary">👁️ Observations enregistrées</h4>
-  <input class="form-control mb-3" placeholder="🔍 Filtrer par mot-clé ou parcelle">
+  <input id="searchInput" class="form-control mb-3" placeholder="🔍 Filtrer par mot-clé ou parcelle" onkeyup="filterCards()">
 
-  <div class="row">
-    <!-- Ici tu vas afficher dynamiquement les observations avec tri, suppression, modification -->
+  <div class="row" id="observations-container">
+    {% for obs in observations %}
     <div class="col-md-6 observation-card">
       <div class="card">
-        <img src="/static/uploads/sample.jpg" class="card-img-top" alt="Photo">
+        {% if obs.photo %}
+        <img src="/static/uploads/{{ obs.photo }}" class="card-img-top" alt="Photo">
+        {% endif %}
         <div class="card-body">
-          <h5 class="card-title">📍 P1 | 🌿 Maladies</h5>
-          <p class="card-text"><strong>Date:</strong> 2025-05-30</p>
-          <p><strong>Description:</strong> Jaunissement des feuilles</p>
-          <p><strong>Recommandation:</strong> Ajouter engrais fer</p>
-          <button class="btn btn-sm btn-outline-primary">✏️ Modifier</button>
-          <button class="btn btn-sm btn-outline-danger">🗑 Supprimer</button>
+          <h5 class="card-title">📍 {{ obs.parcelle }} | {{ obs.type }}</h5>
+          <p class="card-text"><strong>Date:</strong> {{ obs.date }}</p>
+          <p><strong>Description:</strong> {{ obs.description }}</p>
+          <p><strong>Recommandation:</strong> {{ obs.recommandation }}</p>
+          <form method="post" action="/delete_observation/{{ loop.index0 }}" style="display:inline;">
+            <button class="btn btn-sm btn-outline-danger">🗑 Supprimer</button>
+          </form>
         </div>
       </div>
     </div>
-    <!-- Répéter pour chaque observation -->
+    {% endfor %}
   </div>
 
   <div class="mt-5 text-center">

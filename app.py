@@ -10,37 +10,15 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Données temporaires
-users = {'admin': '1234'}
-parcelles = []
+observations = []
 
 @app.route('/')
 def home():
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = ''
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if users.get(username) == password:
-            session['user'] = username
-            return redirect(url_for('dashboard'))
-        error = 'Identifiants incorrects'
-    return render_template('login.html', error=error)
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('dashboard.html', parcelles=parcelles)
+    return redirect(url_for('surveillance'))
 
 @app.route('/surveillance', methods=['GET', 'POST'])
 def surveillance():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
+    global observations
     if request.method == 'POST':
         parcelle = request.form['parcelle']
         date = request.form['date']
@@ -56,6 +34,8 @@ def surveillance():
             photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
         observation = {
+            'id': len(observations) + 1,
+            'parcelle': parcelle,
             'date': date,
             'type': type_probleme,
             'produit': produit,
@@ -63,52 +43,36 @@ def surveillance():
             'recommandation': recommandation,
             'photo': filename
         }
-
-        for p in parcelles:
-            if p['name'] == parcelle:
-                p['observations'].append(observation)
-
+        observations.append(observation)
         return redirect(url_for('surveillance'))
 
-    return render_template('surveillance.html', parcelles=parcelles)
+    return render_template('surveillance.html', observations=observations)
 
-@app.route('/add_parcelle', methods=['POST'])
-def add_parcelle():
-    name = request.form['name']
-    parcelles.append({'name': name, 'observations': []})
-    return redirect(url_for('dashboard'))
+@app.route('/delete_observation/<int:id>')
+def delete_observation(id):
+    global observations
+    observations = [obs for obs in observations if obs['id'] != id]
+    return redirect(url_for('surveillance'))
 
-@app.route('/parcelle/<name>')
-def parcelle(name):
-    parcelle = next((p for p in parcelles if p['name'] == name), None)
-    return render_template('parcelle.html', parcelle=parcelle)
+@app.route('/rapports')
+def rapports():
+    return render_template('rapports.html', observations=observations)
 
-@app.route('/export_pdf/<name>')
-def export_pdf(name):
-    parcelle = next((p for p in parcelles if p['name'] == name), None)
-    if not parcelle:
-        return "Parcelle non trouvée", 404
-
+@app.route('/export_pdf')
+def export_pdf():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Rapport de Surveillance - {name}", ln=1, align='C')
+    pdf.cell(200, 10, txt="Rapport de Surveillance", ln=1, align='C')
     pdf.ln(5)
-    count = 1
-    for obs in parcelle['observations']:
-        pdf.multi_cell(0, 10, txt=f"{count}. Date: {obs['date']}, Observation: {obs['description']} (Photo {count})")
-        pdf.multi_cell(0, 10, txt=f"   Recommandation: {obs['recommandation']}")
-        pdf.ln(2)
-        count += 1
-    filepath = f"{name}_rapport.pdf"
+    for obs in observations:
+        pdf.cell(200, 10, txt=f"Parcelle: {obs['parcelle']} - {obs['date']}", ln=1)
+        pdf.multi_cell(0, 10, txt=f"Observation: {obs['description']}")
+        pdf.multi_cell(0, 10, txt=f"Recommandation: {obs['recommandation']}")
+        pdf.ln(5)
+    filepath = "rapport_observations.pdf"
     pdf.output(filepath)
     return send_file(filepath, as_attachment=True)
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('login'))
-
 if __name__ == '__main__':
-    PORT = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=PORT)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
