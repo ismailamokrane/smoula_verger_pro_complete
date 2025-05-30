@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Surveillance - Smoula Verger Pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    .observation-card { margin-bottom: 20px; }
+    .success-message { display: none; }
+  </style>
   <script>
     function toggleProduits() {
       var type = document.getElementById("type_probleme").value;
       var produitsSection = document.getElementById("produit_section");
-
       if (type === "maladies" || type === "insectes" || type === "fertilisation") {
         produitsSection.style.display = "block";
-
         var produits = {
           "maladies": ["Fongicide A", "Fongicide B", "Soufre liquide"],
           "insectes": ["Insecticide X", "Insecticide Y", "Huile blanche"],
           "fertilisation": ["Engrais NPK", "Compost organique", "Azote foliaire"]
         };
-
         var select = document.getElementById("produit");
         select.innerHTML = "";
         produits[type].forEach(function(p) {
@@ -32,12 +33,20 @@
         produitsSection.style.display = "none";
       }
     }
+
+    function showSuccess() {
+      document.getElementById("success-message").style.display = "block";
+      setTimeout(() => document.getElementById("success-message").style.display = "none", 3000);
+    }
   </script>
 </head>
 <body class="bg-light">
 <div class="container py-5">
   <h2 class="text-success mb-4">📸 Surveillance - Nouvelle Observation</h2>
-  <form method="post" enctype="multipart/form-data" action="/add_observation">
+
+  <div id="success-message" class="alert alert-success success-message">✅ Observation ajoutée avec succès !</div>
+
+  <form method="post" enctype="multipart/form-data" action="/add_observation" onsubmit="showSuccess()">
     <div class="mb-3">
       <label for="parcelle" class="form-label">📍 Parcelle</label>
       <select name="parcelle" class="form-select" required>
@@ -66,9 +75,7 @@
 
     <div class="mb-3" id="produit_section" style="display:none;">
       <label for="produit" class="form-label">💡 Produit recommandé</label>
-      <select name="produit" id="produit" class="form-select">
-        <!-- Options générées dynamiquement -->
-      </select>
+      <select name="produit" id="produit" class="form-select"></select>
     </div>
 
     <div class="mb-3">
@@ -88,9 +95,32 @@
 
     <button type="submit" class="btn btn-success">✅ Ajouter l'observation</button>
   </form>
-  <div class="mt-4 text-center">
-    <a href="/dashboard" class="btn btn-outline-success me-2">🏠 Accueil</a>
-    <a href="javascript:history.back()" class="btn btn-outline-secondary">🔙 Retour</a>
+
+  <hr class="my-5">
+
+  <h4 class="text-secondary">👁️ Observations enregistrées</h4>
+  <input class="form-control mb-3" placeholder="🔍 Filtrer par mot-clé ou parcelle">
+
+  <div class="row">
+    <!-- Ici tu vas afficher dynamiquement les observations avec tri, suppression, modification -->
+    <div class="col-md-6 observation-card">
+      <div class="card">
+        <img src="/static/uploads/sample.jpg" class="card-img-top" alt="Photo">
+        <div class="card-body">
+          <h5 class="card-title">📍 P1 | 🌿 Maladies</h5>
+          <p class="card-text"><strong>Date:</strong> 2025-05-30</p>
+          <p><strong>Description:</strong> Jaunissement des feuilles</p>
+          <p><strong>Recommandation:</strong> Ajouter engrais fer</p>
+          <button class="btn btn-sm btn-outline-primary">✏️ Modifier</button>
+          <button class="btn btn-sm btn-outline-danger">🗑 Supprimer</button>
+        </div>
+      </div>
+    </div>
+    <!-- Répéter pour chaque observation -->
+  </div>
+
+  <div class="mt-5 text-center">
+    <a href="/rapports" class="btn btn-outline-success">📄 Voir Rapport</a>
   </div>
 </div>
 </body>
